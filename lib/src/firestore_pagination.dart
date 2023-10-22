@@ -293,6 +293,16 @@ class _FirestorePaginationState extends State<FirestorePagination> {
   }
 
   @override
+  void didUpdateWidget(FirestorePagination oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.query != oldWidget.query) {
+      _docs.clear();
+      _isInitialLoading = true;
+      _loadDocuments();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return _isInitialLoading
         ? widget.initialLoader
