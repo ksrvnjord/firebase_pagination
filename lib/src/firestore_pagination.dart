@@ -30,7 +30,7 @@ import 'functions/separator_builder.dart';
 /// Supports live updates and realtime updates to loaded data.
 ///
 /// Data can be represented in a [ListView], [GridView] or scollable [Wrap].
-class FirestorePagination extends StatefulWidget {
+class FirestorePagination<T> extends StatefulWidget {
   /// Creates a [StreamBuilder] widget that automatically loads more data when
   /// the user scrolls to the bottom.
   ///
@@ -68,13 +68,13 @@ class FirestorePagination extends StatefulWidget {
   /// ### Note:
   /// - The query must **NOT** contain a `limit` itself.
   /// - The `limit` must be set using the [limit] property of this widget.
-  final Query query;
+  final Query<T> query;
 
   /// The builder to use to build the items in the list.
   ///
   /// The builder is passed the build context, snapshot of the document and
   /// index of the item in the list.
-  final Widget Function(BuildContext, DocumentSnapshot, int) itemBuilder;
+  final Widget Function(BuildContext, DocumentSnapshot<T>, int) itemBuilder;
 
   /// The builder to use to render the separator.
   ///
@@ -144,13 +144,13 @@ class FirestorePagination extends StatefulWidget {
   final ScrollController? controller;
 
   @override
-  State<FirestorePagination> createState() => _FirestorePaginationState();
+  State<FirestorePagination<T>> createState() => _FirestorePaginationState<T>();
 }
 
 /// The state of the [FirestorePagination] widget.
-class _FirestorePaginationState extends State<FirestorePagination> {
+class _FirestorePaginationState<T> extends State<FirestorePagination<T>> {
   /// All the data that has been loaded from Firestore.
-  final List<DocumentSnapshot> _docs = [];
+  final List<DocumentSnapshot<T>> _docs = [];
 
   /// Snapshot subscription for the query.
   ///
@@ -192,7 +192,8 @@ class _FirestorePaginationState extends State<FirestorePagination> {
       docsQuery = docsQuery.startAtDocument(_docs.first);
     }
 
-    _streamSub = docsQuery.snapshots().listen((QuerySnapshot snapshot) async {
+    _streamSub =
+        docsQuery.snapshots().listen((QuerySnapshot<T> snapshot) async {
       await tempSub?.cancel();
 
       _docs
@@ -249,7 +250,7 @@ class _FirestorePaginationState extends State<FirestorePagination> {
 
     _liveStreamSub =
         latestDocQuery.snapshots(includeMetadataChanges: true).listen(
-      (QuerySnapshot snapshot) async {
+      (QuerySnapshot<T> snapshot) async {
         await tempSub?.cancel();
         if (snapshot.docs.isEmpty ||
             snapshot.docs.first.metadata.hasPendingWrites) return;
@@ -293,7 +294,7 @@ class _FirestorePaginationState extends State<FirestorePagination> {
   }
 
   @override
-  void didUpdateWidget(FirestorePagination oldWidget) {
+  void didUpdateWidget(FirestorePagination<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.query != oldWidget.query) {
       _docs.clear();
@@ -308,7 +309,7 @@ class _FirestorePaginationState extends State<FirestorePagination> {
         ? widget.initialLoader
         : _docs.isEmpty
             ? widget.onEmpty
-            : BuildPagination(
+            : BuildPagination<DocumentSnapshot<T>>(
                 items: _docs,
                 itemBuilder: widget.itemBuilder,
                 separatorBuilder: widget.separatorBuilder ?? separatorBuilder,

@@ -30,7 +30,7 @@ import 'functions/separator_builder.dart';
 /// Supports live updates and realtime updates to loaded data.
 ///
 /// Data can be represented in a [ListView], [GridView] or scollable [Wrap].
-class RealtimeDBPagination extends StatefulWidget {
+class RealtimeDBPagination<T> extends StatefulWidget {
   /// Creates a [StreamBuilder] widget that automatically loads more data when
   /// the user scrolls to the bottom.
   ///
